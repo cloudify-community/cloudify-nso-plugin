@@ -1,0 +1,72 @@
+plugins:
+
+  nso:
+    executor: central_deployment_agent
+    package_name: 'cloudify-nso-plugin'
+    package_version: '1.0'
+
+node_types:
+
+  nso.types.NSO:
+    derived_from: cloudify.nodes.Root
+    properties:
+      ip:
+        type: string
+      rest_port:
+        type: integer
+        default: 8080
+      use_existing:
+        type: boolean
+        default: true
+      username:
+        type: string
+      password:
+        type: string
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create:
+          implementation: nso.nso_plugin.nso.create
+        start:
+          implementation: nso.nso_plugin.nso.start
+        stop:
+          implementation: nso.nso_plugin.nso.stop
+        delete:
+          implementation: nso.nso_plugin.nso.delete
+      control:
+        sync_from:
+          implementation: nso.nso_plugin.nso.sync_from
+
+  nso.types.CSR:
+    derived_from: cloudify.nodes.Root
+    properties:
+      device_type:
+        type: string
+      device_name:
+        type: string
+      ned_id:
+        type: string
+        default: tailf-ned-cisco-ios-id:cisco-ios
+      auth_group:
+        type: string
+      port:
+        type: integer
+    interfaces:
+      cloudify.interfaces.lifecycle:
+        create: {}
+        delete: {}
+
+relationships:
+
+  managed_by_nso:
+    derived_from: cloudify.relationships.connected_to
+    target_interfaces:
+      cloudify.interfaces.relationship_lifecycle:
+        establish:
+          implementation: nso.nso_plugin.nso.add_device
+          retry_interval: 30
+          max_retries: 20
+          inputs:
+            device_ip:
+              type: string
+        unlink:
+          implementation: nso.nso_plugin.nso.remove_device
