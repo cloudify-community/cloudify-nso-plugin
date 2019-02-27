@@ -7,7 +7,6 @@ setup(
     author='Data Vision',
     author_email='info@datavision.com',
     packages=[
-        'nso_sdk',
         'nso_plugin'
     ],
     license='LICENSE',
