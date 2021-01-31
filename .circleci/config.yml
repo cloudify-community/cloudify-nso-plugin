@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 checkout:
   post:
@@ -9,41 +9,42 @@ checkout:
         git checkout -qf FETCH_HEAD
       fi
 
-jobs:
-
-  tox:
+executors:
+  py27:
     docker:
-      - image: circleci/python:2.7.15-stretch
+      - image: circleci/python:2.7
+
+commands:
+  run_unittest:
     steps:
       - checkout
       - run:
-          name: Download pip
-          command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
-      - run:
-          name: Install pip
-          command: sudo python get-pip.py 'pip<=20.3.3'
-      - run:
-          name: Install virtualenv
-          command: pip install --user virtualenv
-      - run:
-          name: Init virtualenv
-          command: virtualenv env && source env/bin/activate
-      - run:
           name: install tox
           command: pip install --user tox
-      - run: /home/circleci/.local/bin/tox -e flake8
+      - run:
+          name: Run Flake8
+          command: /home/circleci/.local/bin/tox -e flake8
+jobs:
+
+  unittests_py27:
+    executor: py27
+    steps:
+      - run_unittest
+
 
 workflows:
   version: 2
   tests:
-    jobs: &all_jobs
-      - tox
+    jobs:
+      - unittests_py27
+
   nightly:
     triggers:
     - schedule:
-        cron: "0 1 * * *"
+        cron: "0 3 * * *"
         filters:
           branches:
             only:
               - master
-    jobs: *all_jobs
+    jobs:
+      - unittests_py27
