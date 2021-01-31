@@ -21,7 +21,7 @@ jobs:
           command: curl "https://bootstrap.pypa.io/get-pip.py" -o "get-pip.py"
       - run:
           name: Install pip
-          command: sudo python get-pip.py
+          command: sudo python get-pip.py 'pip<=20.3.3'
       - run:
           name: Install virtualenv
           command: pip install --user virtualenv
