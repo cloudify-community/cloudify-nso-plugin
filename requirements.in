@@ -1,0 +1,2 @@
+-e fusion-common
+cryptography>=41.0.5
