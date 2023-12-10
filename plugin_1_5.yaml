@@ -3,7 +3,7 @@ plugins:
   nso:
     executor: central_deployment_agent
     package_name: 'cloudify-nso-plugin'
-    package_version: '1.0'
+    package_version: '1.0.0.0'
 
 node_types:
 

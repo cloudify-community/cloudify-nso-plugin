@@ -1,5 +1,17 @@
 version: 2.1
 
+unittest-post-steps: &unittest-post-steps
+  post-steps:
+    - store_test_results:
+        path: /home/circleci/project/nosetests.xml
+    - store_artifacts:
+        path: /home/circleci/project/coverage.xml
+        prefix: tests
+    - slack/notify_failed
+
+orbs:
+  node: cloudify/public-unittest-orb@volatile
+
 checkout:
   post:
     - >
@@ -9,42 +21,25 @@ checkout:
         git checkout -qf FETCH_HEAD
       fi
 
-executors:
-  py27:
-    docker:
-      - image: circleci/python:2.7
-
-commands:
-  run_unittest:
-    steps:
-      - checkout
-      - run:
-          name: install tox
-          command: pip install --user tox
-      - run:
-          name: Run Flake8
-          command: /home/circleci/.local/bin/tox -e flake8
-jobs:
-
-  unittests_py27:
-    executor: py27
-    steps:
-      - run_unittest
-
-
 workflows:
-  version: 2
+  version: 2.1
   tests:
     jobs:
-      - unittests_py27
+      - node/unittests_job:
+          context:
+            - slack-secrets
+          <<: *unittest-post-steps
 
   nightly:
     triggers:
-    - schedule:
-        cron: "0 3 * * *"
-        filters:
-          branches:
-            only:
-              - master
+      - schedule:
+          cron: "0 1 * * 0,2,4,6"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
-      - unittests_py27
+      - node/unittests_job:
+          context: 
+            - slack-secrets
+          <<: *unittest-post-steps
