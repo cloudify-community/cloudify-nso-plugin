@@ -1,14 +1,5 @@
 version: 2.1
 
-unittest-post-steps: &unittest-post-steps
-  post-steps:
-    - store_test_results:
-        path: /home/circleci/project/nosetests.xml
-    - store_artifacts:
-        path: /home/circleci/project/coverage.xml
-        prefix: tests
-    - slack/notify_failed
-
 orbs:
   node: cloudify/public-unittest-orb@volatile
 
@@ -25,10 +16,7 @@ workflows:
   version: 2.1
   tests:
     jobs:
-      - node/unittests_job:
-          context:
-            - slack-secrets
-          <<: *unittest-post-steps
+      - node/unittests_job
 
   nightly:
     triggers:
@@ -39,7 +27,4 @@ workflows:
               only:
                 - master
     jobs:
-      - node/unittests_job:
-          context: 
-            - slack-secrets
-          <<: *unittest-post-steps
+      - node/unittests_job
